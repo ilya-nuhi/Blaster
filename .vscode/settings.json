@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "2DTemplate2022.3.8f1.sln"
+    "dotnet.defaultSolution": "Blaster.sln"
 }
