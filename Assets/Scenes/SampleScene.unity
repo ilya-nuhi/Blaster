@@ -123,6 +123,84 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &427482740
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 427482742}
+  - component: {fileID: 427482741}
+  m_Layer: 0
+  m_Name: Board
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &427482741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 427482740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae8a361bb8b26064da18b2f712bcedfe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  width: 3
+  height: 5
+  tileNormalPrefab: {fileID: 4368224668584315525, guid: 60cb92ed94c16bf478027e025d4cd561, type: 3}
+  gamePiecePrefabs:
+  - {fileID: 7219897754079254917, guid: 97a2fe537ec2b5e4f9a3ff26facb88a7, type: 3}
+  - {fileID: 7774199294077525721, guid: 053de59e1fd53ef4f9ffaba3e7a9cb27, type: 3}
+  - {fileID: 2306679703160783645, guid: e507f336d638ae343af56a096d5439f3, type: 3}
+  - {fileID: 7906508136322239510, guid: c284a5f0867ebc143b11791e4bb041de, type: 3}
+  - {fileID: 7167557089063367052, guid: 86138b4df7fb69041adf9490716426b6, type: 3}
+  - {fileID: 2287112298543615288, guid: 2b6886108c773ab46b870832abb43375, type: 3}
+  - {fileID: 3536293773805585316, guid: 14c1ba2a284562a47b02aa8f21319fd9, type: 3}
+  - {fileID: 1400783971494181629, guid: 28217340456d88f48b5607275b2963d5, type: 3}
+  levelJsonPath:
+  - Assets/Dream Games_Software Engineering_Case Study Assets-20231204T101900Z-001/Dream
+    Games_Software Engineering_Case Study Assets/Levels/level_01.json
+  - Assets/Dream Games_Software Engineering_Case Study Assets-20231204T101900Z-001/Dream
+    Games_Software Engineering_Case Study Assets/Levels/level_02.json
+  - Assets/Dream Games_Software Engineering_Case Study Assets-20231204T101900Z-001/Dream
+    Games_Software Engineering_Case Study Assets/Levels/level_03.json
+  - Assets/Dream Games_Software Engineering_Case Study Assets-20231204T101900Z-001/Dream
+    Games_Software Engineering_Case Study Assets/Levels/level_04.json
+  - Assets/Dream Games_Software Engineering_Case Study Assets-20231204T101900Z-001/Dream
+    Games_Software Engineering_Case Study Assets/Levels/level_05.json
+  - Assets/Dream Games_Software Engineering_Case Study Assets-20231204T101900Z-001/Dream
+    Games_Software Engineering_Case Study Assets/Levels/level_06.json
+  - Assets/Dream Games_Software Engineering_Case Study Assets-20231204T101900Z-001/Dream
+    Games_Software Engineering_Case Study Assets/Levels/level_07.json
+  - Assets/Dream Games_Software Engineering_Case Study Assets-20231204T101900Z-001/Dream
+    Games_Software Engineering_Case Study Assets/Levels/level_08.json
+  - Assets/Dream Games_Software Engineering_Case Study Assets-20231204T101900Z-001/Dream
+    Games_Software Engineering_Case Study Assets/Levels/level_09.json
+  - Assets/Dream Games_Software Engineering_Case Study Assets-20231204T101900Z-001/Dream
+    Games_Software Engineering_Case Study Assets/Levels/level_10.json
+  level: 1
+--- !u!4 &427482742
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 427482740}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -184,7 +262,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -220,3 +298,4 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 519420032}
+  - {fileID: 427482742}
