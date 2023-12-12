@@ -102,3 +102,9 @@ MonoBehaviour:
   pieceType: 2
   isBreakableWithMatch: 0
   isMatchingPiece: 1
+  isMovable: 1
+  breakableValue: 0
+  breakableSprites: []
+  tntStateSprite: {fileID: 21300000, guid: 53013d189ef651f4da80eb2b1b4abf95, type: 3}
+  normalStateSprite: {fileID: 21300000, guid: abb2fe24f8cb09547a493ccb41f14d1a, type: 3}
+  interpolation: 4

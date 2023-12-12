@@ -5,6 +5,8 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
 using Random = UnityEngine.Random;
+using System.Linq;
+using UnityEngine.Experimental.GlobalIllumination;
 
 public class LevelInfo
     {
@@ -45,6 +47,7 @@ public class Board : MonoBehaviour
         
         SetupTiles();
         SetupGamePieces();
+        CheckTntState();
         SetupCamera();
     }
 
@@ -188,25 +191,56 @@ public class Board : MonoBehaviour
             if(clickedPiece.isMatchingPiece){
                 BlastRoutine(clickedPiece);
             }
+            else if(clickedPiece.pieceType==PieceType.TNT){
+                TntRoutine(clickedPiece);
+            }
         }
-        
-        
+    }
+
+    private void TntRoutine(GamePiece clickedPiece){
+        List<GamePiece> matchingPieces = new List<GamePiece>();
+        List<GamePiece> breakablePieces = new List<GamePiece>();
+        (matchingPieces, breakablePieces) = TriggerBomb(clickedPiece);
+        List<Tile> emptyTiles = GetTilesOfPieces(matchingPieces);
+        emptyTiles = emptyTiles.Union(BreakPieces(breakablePieces)).ToList();
+        ClearPieces(matchingPieces);
+        CollapseRoutine(emptyTiles);
+        CheckTntState();
     }
 
     private void BlastRoutine(GamePiece clickedPiece)
     {
         List<GamePiece> matchingPieces = new List<GamePiece>();
         List<GamePiece> breakablePieces = new List<GamePiece>();
-        
+        int x = clickedPiece.xIndex;
+        int y = clickedPiece.yIndex;
         (matchingPieces, breakablePieces) = FindAdjacentMatches(clickedPiece);
         if(matchingPieces.Count<2)return;
         else{
+            List<Tile> emptyTiles = GetTilesOfPieces(matchingPieces);
+            emptyTiles = emptyTiles.Union(BreakPieces(breakablePieces)).ToList();
+            
             ClearPieces(matchingPieces);
-            //BreakPieces(breakablePieces);"
+            // if cliclked piece is capable of making tnt
+            if(clickedPiece.GetComponent<SpriteRenderer>().sprite == clickedPiece.tntStateSprite){
+                MakeTnt(x,y);
+            }
+            CollapseRoutine(emptyTiles);
+            CheckTntState();
         }
     }
 
-    /*private (List<GamePiece>, List<GamePiece>) FindAdjacentMatches(GamePiece clickedPiece)
+    List<Tile> GetTilesOfPieces(List<GamePiece> gamePieces){
+        List<Tile> tiles = new List<Tile>();
+        foreach(var piece in gamePieces){
+            if(!tiles.Contains(m_allTiles[piece.xIndex, piece.yIndex])){
+                tiles.Add(m_allTiles[piece.xIndex, piece.yIndex]);
+            }
+        }
+        return tiles;
+    }
+
+    private (List<GamePiece>, List<GamePiece>) FindAdjacentMatches(GamePiece clickedPiece)
     {
         List<GamePiece> matchingPieces = new List<GamePiece>();
         List<GamePiece> breakablePieces = new List<GamePiece>();
@@ -216,142 +250,326 @@ public class Board : MonoBehaviour
         matchingPieces.Add(clickedPiece);
         while(pieceQueue.Count!=0){
             GamePiece piece = pieceQueue.Dequeue();
-            if(IsWithinBounds(piece.xIndex+1,piece.yIndex)){
-                GamePiece rightPiece = m_allGamePieces[piece.xIndex+1, piece.yIndex];
-                //if the right piece has a matching value, that piece will be added to the matching list.
-                if(rightPiece!=null){
-                    if(!matchingPieces.Contains(rightPiece) && !breakablePieces.Contains(rightPiece)){
-                        if(piece.pieceType==rightPiece.pieceType){
-                            pieceQueue.Enqueue(rightPiece);
-                            matchingPieces.Add(rightPiece);
+            if(piece.isMatchingPiece){
+                if(IsWithinBounds(piece.xIndex+1,piece.yIndex)){
+                    GamePiece rightPiece = m_allGamePieces[piece.xIndex+1, piece.yIndex];
+                    //if the right piece has a matching value, that piece will be added to the matching list.
+                    if(rightPiece!=null){
+                        if(!matchingPieces.Contains(rightPiece) && !breakablePieces.Contains(rightPiece)){
+                            if(piece.pieceType==rightPiece.pieceType){
+                                pieceQueue.Enqueue(rightPiece);
+                                matchingPieces.Add(rightPiece);
+                            }
+                            else if(rightPiece.isBreakableWithMatch){
+                                breakablePieces.Add(rightPiece);
+                            }
                         }
-                        else if(rightPiece.isBreakableWithMatch){
-                            breakablePieces.Add(rightPiece);
+                    }
+                    
+                }
+                if(IsWithinBounds(piece.xIndex-1,piece.yIndex)){
+                    GamePiece leftPiece = m_allGamePieces[piece.xIndex-1, piece.yIndex];
+                    //if the left piece has a matching value, that piece will be added to the matching list.
+                    if(leftPiece!=null){
+                        if(!matchingPieces.Contains(leftPiece) && !breakablePieces.Contains(leftPiece)){
+                            if(piece.pieceType==leftPiece.pieceType){
+                                pieceQueue.Enqueue(leftPiece);
+                                matchingPieces.Add(leftPiece);
+                            }
+                            else if(leftPiece.isBreakableWithMatch){
+                                breakablePieces.Add(leftPiece);
+                            }
                         }
                     }
                 }
-                
-            }
-            if(IsWithinBounds(piece.xIndex-1,piece.yIndex)){
-                GamePiece leftPiece = m_allGamePieces[piece.xIndex-1, piece.yIndex];
-                //if the left piece has a matching value, that piece will be added to the matching list.
-                if(leftPiece!=null){
-                    if(!matchingPieces.Contains(leftPiece) && !breakablePieces.Contains(leftPiece)){
-                        if(piece.pieceType==leftPiece.pieceType){
-                            pieceQueue.Enqueue(leftPiece);
-                            matchingPieces.Add(leftPiece);
-                        }
-                        else if(leftPiece.isBreakableWithMatch){
-                            breakablePieces.Add(leftPiece);
-                        }
-                    }
-                }
-            }
-            if(IsWithinBounds(piece.xIndex,piece.yIndex+1)){
-                GamePiece upPiece = m_allGamePieces[piece.xIndex, piece.yIndex+1];
-                //if the upper piece has a matching value, that piece will be added to the matching list.
-                if(upPiece!=null){
-                    if(!matchingPieces.Contains(upPiece) && !breakablePieces.Contains(upPiece)){
-                        if(piece.pieceType==upPiece.pieceType){
-                            pieceQueue.Enqueue(upPiece);
-                            matchingPieces.Add(upPiece);
-                        }
-                        else if(upPiece.isBreakableWithMatch){
-                            breakablePieces.Add(upPiece);
+                if(IsWithinBounds(piece.xIndex,piece.yIndex+1)){
+                    GamePiece upPiece = m_allGamePieces[piece.xIndex, piece.yIndex+1];
+                    //if the upper piece has a matching value, that piece will be added to the matching list.
+                    if(upPiece!=null){
+                        if(!matchingPieces.Contains(upPiece) && !breakablePieces.Contains(upPiece)){
+                            if(piece.pieceType==upPiece.pieceType){
+                                pieceQueue.Enqueue(upPiece);
+                                matchingPieces.Add(upPiece);
+                            }
+                            else if(upPiece.isBreakableWithMatch){
+                                breakablePieces.Add(upPiece);
+                            }
                         }
                     }
                 }
-            }
-            if(IsWithinBounds(piece.xIndex,piece.yIndex-1)){
-                GamePiece downPiece = m_allGamePieces[piece.xIndex, piece.yIndex-1];
-                //if the below piece has a matching value, that piece will be added to the matching list.
-                if(downPiece!=null){
-                    if(!matchingPieces.Contains(downPiece) && !breakablePieces.Contains(downPiece)){
-                        if(piece.pieceType==downPiece.pieceType){
-                            pieceQueue.Enqueue(downPiece);
-                            matchingPieces.Add(downPiece);
-                        }
-                        else if(downPiece.isBreakableWithMatch){
-                            breakablePieces.Add(downPiece);
+                if(IsWithinBounds(piece.xIndex,piece.yIndex-1)){
+                    GamePiece downPiece = m_allGamePieces[piece.xIndex, piece.yIndex-1];
+                    //if the below piece has a matching value, that piece will be added to the matching list.
+                    if(downPiece!=null){
+                        if(!matchingPieces.Contains(downPiece) && !breakablePieces.Contains(downPiece)){
+                            if(piece.pieceType==downPiece.pieceType){
+                                pieceQueue.Enqueue(downPiece);
+                                matchingPieces.Add(downPiece);
+                            }
+                            else if(downPiece.isBreakableWithMatch){
+                                breakablePieces.Add(downPiece);
+                            }
                         }
                     }
+                    
                 }
-                
             }
         }
         return (matchingPieces, breakablePieces);
-    }*/
+    }
 
-    private (List<GamePiece>, List<GamePiece>) FindAdjacentMatches(GamePiece clickedPiece)
-{
-    List<GamePiece> matchingPieces = new List<GamePiece>();
-    List<GamePiece> breakablePieces = new List<GamePiece>();
-    Queue<GamePiece> pieceQueue = new Queue<GamePiece>();
-
-    // Recursive function to find adjacent matching pieces
-    void FindMatchesRecursive(GamePiece piece)
+    //Recursive function of FindAdjacentMatches function
+    /*private (List<GamePiece>, List<GamePiece>) FindAdjacentMatches(GamePiece clickedPiece)
     {
-        if (piece == null || matchingPieces.Contains(piece) || breakablePieces.Contains(piece))
-            return;
+        List<GamePiece> matchingPieces = new List<GamePiece>();
+        List<GamePiece> breakablePieces = new List<GamePiece>();
 
-        matchingPieces.Add(piece);
-
-        if (piece.isBreakableWithMatch)
-            breakablePieces.Add(piece);
-
-        // Check adjacent pieces and call recursively
-        void CheckAdjacent(int x, int y)
+        // Recursive function to find adjacent matching pieces
+        void FindMatchesRecursive(GamePiece piece)
         {
-            if (IsWithinBounds(x, y))
+            if (piece == null || matchingPieces.Contains(piece) || breakablePieces.Contains(piece))
+                return;
+
+            matchingPieces.Add(piece);
+
+            // Check adjacent pieces and call recursively
+            void CheckAdjacent(int x, int y)
             {
-                GamePiece adjacentPiece = m_allGamePieces[x, y];
-                if (adjacentPiece != null && !matchingPieces.Contains(adjacentPiece) && !breakablePieces.Contains(adjacentPiece))
+                if (IsWithinBounds(x, y))
                 {
-                    if (piece.pieceType == adjacentPiece.pieceType)
+                    GamePiece adjacentPiece = m_allGamePieces[x, y];
+                    if (adjacentPiece != null && !matchingPieces.Contains(adjacentPiece) && !breakablePieces.Contains(adjacentPiece))
                     {
-                        pieceQueue.Enqueue(adjacentPiece);
-                        FindMatchesRecursive(adjacentPiece);
-                    }
-                    else if (adjacentPiece.isBreakableWithMatch)
-                    {
-                        breakablePieces.Add(adjacentPiece);
+                        if (piece.pieceType == adjacentPiece.pieceType)
+                        {
+                            FindMatchesRecursive(adjacentPiece);
+                        }
+                        else if (adjacentPiece.isBreakableWithMatch)
+                        {
+                            breakablePieces.Add(adjacentPiece);
+                        }
                     }
                 }
             }
+
+            CheckAdjacent(piece.xIndex + 1, piece.yIndex); // Right
+            CheckAdjacent(piece.xIndex - 1, piece.yIndex); // Left
+            CheckAdjacent(piece.xIndex, piece.yIndex + 1); // Up
+            CheckAdjacent(piece.xIndex, piece.yIndex - 1); // Down
         }
 
-        CheckAdjacent(piece.xIndex + 1, piece.yIndex); // Right
-        CheckAdjacent(piece.xIndex - 1, piece.yIndex); // Left
-        CheckAdjacent(piece.xIndex, piece.yIndex + 1); // Up
-        CheckAdjacent(piece.xIndex, piece.yIndex - 1); // Down
-    }
-
-    pieceQueue.Enqueue(clickedPiece);
-    FindMatchesRecursive(clickedPiece);
-
-    return (matchingPieces, breakablePieces);
-}
+        FindMatchesRecursive(clickedPiece);
+        return (matchingPieces, breakablePieces);
+    }*/
     
-    private void ClearPieces(List<GamePiece> matchingPieces)
+    private void ClearPieces(List<GamePiece> gamePieces)
     {
-        foreach(var piece in matchingPieces){
+        foreach(var piece in gamePieces){
             if(piece != null){
                 m_allGamePieces[piece.xIndex,piece.yIndex] = null;
                 Destroy(piece.gameObject);
             }
         }
-        
     }
 
-    private void BreakPieces(List<GamePiece> breakablePieces)
+    private List<Tile> BreakPieces(List<GamePiece> breakablePieces)
     {
-        // foreach(var piece in breakablePieces){
-        //     if(piece != null){
-        //         m_allGamePieces[piece.xIndex,piece.yIndex] = null;
-        //         Destroy(piece.gameObject);
-        //     }
-        // }
+        List<Tile> clearedTiles = new List<Tile>();
+        foreach(var piece in breakablePieces){
+            if(piece != null){
+                if(piece.isBreakable){
+                    if(piece.breakableValue>0){
+                        piece.BreakGamePiece();
+                    }
+                    else{
+                        clearedTiles.Add(m_allTiles[piece.xIndex,piece.yIndex]);
+                        m_allGamePieces[piece.xIndex,piece.yIndex] = null;
+                        Destroy(piece.gameObject);
+                    }
+                }
+                
+            }
+        }
+        return clearedTiles;
     }
 
+    private void CollapseRoutine(List<Tile> emptyTiles)
+    {
+        List<int> columns = new List<int>();
+        foreach(var tile in emptyTiles){
+            if(!columns.Contains(tile.xIndex)){
+                columns.Add(tile.xIndex);
+                CollapseColumn(tile.xIndex);
+                RefillColumn(tile.xIndex);
+            }
+        }
+    }
 
+    private void CollapseColumn(int column, float collapseTime = 0.1f)
+    {
+        for (int i = 0; i < height-1; i++)
+        {
+            if (m_allGamePieces[column, i] == null)
+            {
+
+                
+                for (int j = i + 1; j < height; j++)
+                {
+                    if (m_allGamePieces[column, j] != null && m_allGamePieces[column, j].isMovable)
+                    {
+                        m_allGamePieces[column, j].Move(column, i, collapseTime * (j - i));
+
+                        m_allGamePieces[column, i] = m_allGamePieces[column, j];
+                        m_allGamePieces[column, i].SetCoord(column, i);
+
+                        m_allGamePieces[column, j] = null;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public void PlaceGamePiece(GamePiece gamePiece, int x, int y)
+    {
+        if (gamePiece == null)
+        {
+            Debug.LogWarning("BOARD:  Invalid GamePiece!");
+            return;
+        }
+
+        gamePiece.transform.position = new Vector3(x, y, 0);
+        gamePiece.transform.rotation = Quaternion.identity;
+
+        if (IsWithinBounds(x, y))
+        {
+            m_allGamePieces[x, y] = gamePiece;
+        }
+
+        gamePiece.SetCoord(x, y);
+    }
+
+    private void RefillColumn(int column, float refillTime = 0.1f)
+    {
+        int falseYOffset = 0;
+        for (int i = 0; i < height; i++)
+        {
+            if (m_allGamePieces[column, i] == null)
+            {
+                RefillTile(column, i, falseYOffset, refillTime);
+                falseYOffset++;
+            }
+        }
+    }
+    
+    private void RefillTile(int x, int y, int falseYOffset, float refillTime = 0.1f)
+    {
+        int randomPiece = Random.Range(0,4);
+        GameObject prefab = Instantiate(gamePiecePrefabs[randomPiece], new Vector3(x, height + falseYOffset, 0), Quaternion.identity);
+        prefab.transform.parent = transform;
+        GamePiece  piece = prefab.GetComponent<GamePiece>();
+        piece.Init(this);
+        piece.Move(x, y, refillTime*(height+falseYOffset-y));
+        piece.SetCoord(x,y);
+        m_allGamePieces[x,y] = piece;
+    }
+
+    private void CheckTntState()
+    {
+        List<GamePiece> gamePieces = new List<GamePiece>();
+
+        for(int i=0; i < width; i++){
+            for(int j=0; j < height; j++){
+                if(m_allGamePieces[i,j]!=null){
+                    
+                    if(!gamePieces.Contains(m_allGamePieces[i,j])){
+                        List<GamePiece> matchingPieces = new List<GamePiece>();
+                        List<GamePiece> breakablePieces = new List<GamePiece>();
+                        (matchingPieces, breakablePieces) = FindAdjacentMatches(m_allGamePieces[i,j]);
+                        if(matchingPieces.Count>=5){
+                            foreach(var piece in matchingPieces){
+                                if(piece.isMatchingPiece){
+                                    piece.GetComponent<SpriteRenderer>().sprite = piece.tntStateSprite;
+                                }
+                            }
+                        }
+                        else{   // After a move, if the current tntstate of a piece is broken it should return its normal state
+                            foreach(var piece in matchingPieces){
+                                if(piece.isMatchingPiece){
+                                    piece.GetComponent<SpriteRenderer>().sprite = piece.normalStateSprite;
+                                }
+                                
+                            }
+                        }
+                        gamePieces = gamePieces.Union(matchingPieces).Union(breakablePieces).ToList();
+                    }
+                }
+            }
+        }
+    }
+
+    private void MakeTnt(int x, int y)
+    {
+        GameObject tntObject = Instantiate(gamePiecePrefabs[4], new Vector3(x,y,0), Quaternion.identity);
+        tntObject.transform.parent = transform;
+        GamePiece tnt = tntObject.GetComponent<GamePiece>();
+        tnt.Init(this);
+        tnt.SetCoord(x,y);
+        m_allGamePieces[x,y] = tnt;
+    }
+
+    private (List<GamePiece>, List<GamePiece>) TriggerBomb(GamePiece clickedPiece)
+    {
+        int x = clickedPiece.xIndex;
+        int y = clickedPiece.yIndex;
+        bool tntCombo = false;
+        if(IsWithinBounds(x+1,y)){
+            if(m_allGamePieces[x+1,y].pieceType == PieceType.TNT) tntCombo=true;
+        }
+        if(IsWithinBounds(x-1,y)){
+            if(m_allGamePieces[x-1,y].pieceType == PieceType.TNT) tntCombo=true;
+        }
+        if(IsWithinBounds(x,y+1)){
+            if(m_allGamePieces[x,y+1].pieceType == PieceType.TNT) tntCombo=true;
+        }
+        if(IsWithinBounds(x,y-1)){
+            if(m_allGamePieces[x,y-1].pieceType == PieceType.TNT) tntCombo=true;
+        }
+
+        // if there is a tnt adjacent to clicked tnt, tnt combo occurs whit size 7x7 
+        int offset = tntCombo ? 3 : 2;
+
+        List<GamePiece> matchingPieces = new List<GamePiece>();
+        List<GamePiece> breakablePieces = new List<GamePiece>();
+        // recursive function for searching all exploding game pieces
+        void ChainTntReaction(int xIndex, int yIndex, int tntOffset=2){
+            for(int i = xIndex-tntOffset; i<=xIndex+tntOffset;i++){
+                for(int j = yIndex-tntOffset; j<=yIndex+tntOffset; j++){
+                    if(IsWithinBounds(i,j)){
+                        if(m_allGamePieces[i,j].isMatchingPiece){
+                            if(!matchingPieces.Contains(m_allGamePieces[i,j])){
+                                matchingPieces.Add(m_allGamePieces[i,j]);
+                            }
+                        }
+                        else if(m_allGamePieces[i,j].isBreakable){
+                            if(!breakablePieces.Contains(m_allGamePieces[i,j])){
+                                breakablePieces.Add(m_allGamePieces[i,j]);
+                            }
+                        }
+                        else if(m_allGamePieces[i,j].pieceType == PieceType.TNT){
+                            if(!matchingPieces.Contains(m_allGamePieces[i,j])){
+                                // Chain tnt reactions can only explode in 5x5 area so the tntoffset will remain 2
+                                matchingPieces.Add(m_allGamePieces[i,j]);
+                                ChainTntReaction(i,j);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ChainTntReaction(x, y, offset);
+        matchingPieces.Add(clickedPiece);
+
+        return (matchingPieces, breakablePieces);
+    }
 }

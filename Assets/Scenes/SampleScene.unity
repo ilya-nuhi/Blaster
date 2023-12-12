@@ -185,7 +185,7 @@ MonoBehaviour:
     Games_Software Engineering_Case Study Assets/Levels/level_09.json
   - Assets/Dream Games_Software Engineering_Case Study Assets-20231204T101900Z-001/Dream
     Games_Software Engineering_Case Study Assets/Levels/level_10.json
-  level: 1
+  level: 4
 --- !u!4 &427482742
 Transform:
   m_ObjectHideFlags: 0
