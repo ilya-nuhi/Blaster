@@ -20,7 +20,7 @@ public class LevelManager : MonoBehaviour
     [TextArea(3,5)]
     [SerializeField] string[] levelJsonPath;
     [SerializeField] Board board;
-    public int level=1;
+    [SerializeField] int level=1;
     public LevelInfo currentLevel;
 
     public int boxCount=0;
@@ -31,8 +31,14 @@ public class LevelManager : MonoBehaviour
     public event Action onBlastOccurs;
     public event Action onClicked;
 
+    GameManager gameManager;
+    private void Awake() {
+        gameManager = FindObjectOfType<GameManager>();
+    }
+
 
     private void Start() {
+        level = gameManager.level;
         currentLevel = LoadLevel(level);
         GetGoals();
         moveCount = currentLevel.move_count;
