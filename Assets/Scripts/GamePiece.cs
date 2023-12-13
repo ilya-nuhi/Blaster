@@ -68,6 +68,7 @@ public class GamePiece : MonoBehaviour
 
 	IEnumerator MoveRoutine(Vector3 destination, float timeToMove)
 	{
+		yield return new WaitForSeconds(0.1f);
 		Vector3 startPosition = transform.position;
 
 		bool reachedDestination = false;
@@ -75,6 +76,11 @@ public class GamePiece : MonoBehaviour
 		float elapsedTime = 0f;
 
 		m_isMoving = true;
+
+		if(xIndex!=destination.x || yIndex!=destination.y){
+			destination.x = xIndex;
+			destination.y = yIndex;
+		}
 
 		while (!reachedDestination)
 		{
@@ -84,11 +90,11 @@ public class GamePiece : MonoBehaviour
 
 				reachedDestination = true;
 
-				if (m_board !=null)
-				{
-					m_board.PlaceGamePiece(this, (int) destination.x, (int) destination.y);
+				// if (m_board !=null)
+				// {
+				//	m_board.PlaceGamePiece(this, (int) destination.x, (int) destination.y);
 
-				}
+				// }
 
 				break;
 			}

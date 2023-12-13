@@ -13,11 +13,15 @@ public class Board : MonoBehaviour
     [SerializeField] GameObject tileNormalPrefab;
     [SerializeField] GameObject[] gamePiecePrefabs;
     [SerializeField] LevelManager levelManager;
+    [SerializeField] float waitClickTime = 0.3f;
+    [SerializeField] GameObject gridBGPrefab;
     public event Action onValidClick;
+    public bool canMove = true;
     
     Tile[,] m_allTiles;
     GamePiece[,] m_allGamePieces;
     LevelInfo currentLevel;
+    float clickTimer=0;
     
     void Start()
     {
@@ -27,14 +31,15 @@ public class Board : MonoBehaviour
         m_allTiles = new Tile[width, height];
         m_allGamePieces = new GamePiece[width, height];
 
-        
         SetupTiles();
         SetupGamePieces();
         CheckTntState();
         SetupCamera();
     }
 
-    
+    private void Update() {
+        clickTimer -= Time.deltaTime;
+    }
 
     private void InitLevel(LevelInfo currentLevel)
     {
@@ -54,6 +59,11 @@ public class Board : MonoBehaviour
                 }
             }
         }
+        //setting gridbackground
+        float gridPosX = (m_allTiles[width-1,0].transform.position.x + m_allTiles[0,0].transform.position.x)/2;
+        float gridPosY = (m_allTiles[0,height-1].transform.position.y + m_allTiles[0,0].transform.position.y)/2;
+        GameObject gridBG = Instantiate(gridBGPrefab, new Vector3(gridPosX, gridPosY, 0), Quaternion.identity);
+        gridBG.GetComponent<SpriteRenderer>().size = new Vector2(width+0.4f,height+0.4f);
     }
 
     void MakeTile(GameObject prefab, int x, int y, int z = 0)
@@ -153,12 +163,10 @@ public class Board : MonoBehaviour
 
     public void ClickTile(Tile tile)
     {
+        if(!canMove){return;}
         GamePiece clickedPiece = m_allGamePieces[tile.xIndex,tile.yIndex];
-        if(clickedPiece!=null){
+        if(clickedPiece!=null && clickTimer<=0){
             if(clickedPiece.isMatchingPiece){
-                if(onValidClick!=null){
-                    onValidClick();
-                }
                 BlastRoutine(clickedPiece);
             }
             else if(clickedPiece.pieceType==PieceType.TNT){
@@ -167,6 +175,7 @@ public class Board : MonoBehaviour
                 }
                 TntRoutine(clickedPiece);
             }
+            clickTimer = waitClickTime;
         }
     }
 
@@ -190,6 +199,10 @@ public class Board : MonoBehaviour
         (matchingPieces, breakablePieces) = FindAdjacentMatches(clickedPiece);
         if(matchingPieces.Count<2)return;
         else{
+            // if cliclked piece has a match its a valid move
+            if(onValidClick!=null){
+                onValidClick();
+            }
             List<Tile> emptyTiles = GetTilesOfPieces(matchingPieces);
             emptyTiles = emptyTiles.Union(BreakPieces(breakablePieces)).ToList();
             
@@ -418,24 +431,24 @@ public class Board : MonoBehaviour
         }
     }
 
-    public void PlaceGamePiece(GamePiece gamePiece, int x, int y)
-    {
-        if (gamePiece == null)
-        {
-            Debug.LogWarning("BOARD:  Invalid GamePiece!");
-            return;
-        }
+    // public void PlaceGamePiece(GamePiece gamePiece, int x, int y)
+    // {
+    //     if (gamePiece == null)
+    //     {
+    //         Debug.LogWarning("BOARD:  Invalid GamePiece!");
+    //         return;
+    //     }
 
-        gamePiece.transform.position = new Vector3(x, y, 0);
-        gamePiece.transform.rotation = Quaternion.identity;
+    //     gamePiece.transform.position = new Vector3(x, y, 0);
+    //     gamePiece.transform.rotation = Quaternion.identity;
 
-        if (IsWithinBounds(x, y))
-        {
-            m_allGamePieces[x, y] = gamePiece;
-        }
+    //     if (IsWithinBounds(x, y))
+    //     {
+    //         m_allGamePieces[x, y] = gamePiece;
+    //     }
 
-        gamePiece.SetCoord(x, y);
-    }
+    //     gamePiece.SetCoord(x, y);
+    // }
 
     private void RefillColumn(int column, float refillTime = 0.1f)
     {

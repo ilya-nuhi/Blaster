@@ -4,6 +4,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
 using System;
+using UnityEngine.SceneManagement;
 
 public class LevelInfo
     {
@@ -20,7 +21,7 @@ public class LevelManager : MonoBehaviour
     [TextArea(3,5)]
     [SerializeField] string[] levelJsonPath;
     [SerializeField] Board board;
-    [SerializeField] int level=1;
+    [SerializeField] GameManager gameManager;
     public LevelInfo currentLevel;
 
     public int boxCount=0;
@@ -30,19 +31,20 @@ public class LevelManager : MonoBehaviour
 
     public event Action onBlastOccurs;
     public event Action onClicked;
+    public event Action onFail;
+    public event Action onLevelSuccess;
+    int level=1;
+    bool levelSuccess = false; // this variable is for preventing conflict with last move win.
 
-    GameManager gameManager;
-    private void Awake() {
-        gameManager = FindObjectOfType<GameManager>();
-    }
 
 
     private void Start() {
-        level = gameManager.level;
+        level = LevelContainer.level;
+        LevelContainer.totalLevel = levelJsonPath.Length;
         currentLevel = LoadLevel(level);
         GetGoals();
         moveCount = currentLevel.move_count;
-        board.onValidClick += ValidClick; 
+        board.onValidClick += ValidClick;
     }
 
     public LevelInfo LoadLevel(int level)
@@ -84,14 +86,15 @@ public class LevelManager : MonoBehaviour
     public void CheckGoals()
     {
         onBlastOccurs();
-        // if(boxCount==0 && stoneCount==0 && vaseCount==0){
-        //     LevelComplete();
-        // }
-    }
-
-    private void LevelComplete()
-    {
-        throw new NotImplementedException();
+        if(boxCount==0 && stoneCount==0 && vaseCount==0){   // level is finished
+            board.canMove = false;
+            levelSuccess = true;
+            if(onLevelSuccess!=null){
+                onLevelSuccess();
+            }
+            LevelContainer.level++;
+            gameManager.ReturnMainScreen();
+        }
     }
 
     private void ValidClick()
@@ -100,13 +103,20 @@ public class LevelManager : MonoBehaviour
         if(onClicked!=null){
             onClicked();
         }
+        StartCoroutine(CheckGameOver());
+    }
+
+    IEnumerator CheckGameOver()
+    {
+        yield return new WaitForEndOfFrame();
         if(moveCount<=0){
-            GameOver();
+            board.canMove=false;
+            if(!levelSuccess){
+                if(onFail!=null){
+                    onFail();
+                }
+            }
         }
     }
 
-    private void GameOver()
-    {
-        Debug.Log("GAME OVER");
-    }
 }

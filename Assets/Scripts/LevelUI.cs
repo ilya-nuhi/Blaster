@@ -12,17 +12,19 @@ public class LevelUI : MonoBehaviour
     [SerializeField] Sprite[] breakableSprites;
     [SerializeField] LevelManager levelManager;
     [SerializeField] TextMeshProUGUI moveCountTMP;
+    [SerializeField] GameObject failPopup;
     List<TextMeshProUGUI> goalCountTexts = new List<TextMeshProUGUI>();
     List<Image> goalCheckImages = new List<Image>();
 
     public bool isBoxGoal = false;
     public bool isStoneGoal = false;
     public bool isVaseGoal = false;
-
     private void Start() {
         SetGoalSprites();
         levelManager.onBlastOccurs+=UpdateUI;
         levelManager.onClicked+=UpdateMoveCount;
+        levelManager.onFail+=ShowFailPopup;
+        levelManager.onLevelSuccess+=NextLevelAnim;
         UpdateUI();
         UpdateMoveCount();
 
@@ -96,4 +98,13 @@ public class LevelUI : MonoBehaviour
     {
         moveCountTMP.text = levelManager.moveCount.ToString();
     }
+    void ShowFailPopup(){
+        failPopup.SetActive(true);
+    }
+
+    private void NextLevelAnim()
+    {
+        //throw new NotImplementedException();
+    }
+
 }
