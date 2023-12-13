@@ -1,22 +1,10 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Newtonsoft.Json;
-using System.IO;
 using Random = UnityEngine.Random;
 using System.Linq;
 using UnityEngine.Experimental.GlobalIllumination;
-
-public class LevelInfo
-    {
-        public int level_number;
-        public int grid_width;
-        public int grid_height;
-        public int move_count;
-        public string[] grid;
-        
-    }
+using System;
 
 public class Board : MonoBehaviour
 {
@@ -24,21 +12,16 @@ public class Board : MonoBehaviour
     [SerializeField] int height;
     [SerializeField] GameObject tileNormalPrefab;
     [SerializeField] GameObject[] gamePiecePrefabs;
-
-    [TextArea(3,5)]
-    [SerializeField] string[] levelJsonPath;
-    [SerializeField ]int level=1;
+    [SerializeField] LevelManager levelManager;
+    public event Action onValidClick;
     
     Tile[,] m_allTiles;
     GamePiece[,] m_allGamePieces;
     LevelInfo currentLevel;
-
-    Tile m_clickedTile;
-
-
+    
     void Start()
     {
-        currentLevel = LoadJson(level);
+        currentLevel = levelManager.currentLevel;
         InitLevel(currentLevel);
         
         m_allTiles = new Tile[width, height];
@@ -51,23 +34,7 @@ public class Board : MonoBehaviour
         SetupCamera();
     }
 
-    private LevelInfo LoadJson(int level)
-    {
-        try
-        {
-            using (StreamReader r = new StreamReader(levelJsonPath[level-1]))
-            {
-                string json = r.ReadToEnd();
-                LevelInfo currentLevel = JsonConvert.DeserializeObject<LevelInfo>(json);
-                return currentLevel;
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.Log(e.Message);
-            return null;
-        }
-    }
+    
 
     private void InitLevel(LevelInfo currentLevel)
     {
@@ -175,6 +142,7 @@ public class Board : MonoBehaviour
         }
 
         if(piece!=null){
+            piece.transform.parent = transform;
             GamePiece gamePiece = piece.GetComponent<GamePiece>();
             gamePiece.Init(this);
             gamePiece.SetCoord(x,y);
@@ -185,13 +153,18 @@ public class Board : MonoBehaviour
 
     public void ClickTile(Tile tile)
     {
-        m_clickedTile = tile;
         GamePiece clickedPiece = m_allGamePieces[tile.xIndex,tile.yIndex];
         if(clickedPiece!=null){
             if(clickedPiece.isMatchingPiece){
+                if(onValidClick!=null){
+                    onValidClick();
+                }
                 BlastRoutine(clickedPiece);
             }
             else if(clickedPiece.pieceType==PieceType.TNT){
+                if(onValidClick!=null){
+                    onValidClick();
+                }
                 TntRoutine(clickedPiece);
             }
         }
@@ -383,6 +356,20 @@ public class Board : MonoBehaviour
                     }
                     else{
                         clearedTiles.Add(m_allTiles[piece.xIndex,piece.yIndex]);
+                        switch(piece.pieceType){
+                            case PieceType.Box:
+                                levelManager.boxCount--;
+                                break;
+                            case PieceType.Stone:
+                                levelManager.stoneCount--;
+                                break;
+                            case PieceType.Vase:
+                                levelManager.vaseCount--;
+                                break;
+                            default:
+                                Debug.LogWarning("WARNING! Piece is not breakable but trying to break it.");
+                                break;
+                        }
                         m_allGamePieces[piece.xIndex,piece.yIndex] = null;
                         Destroy(piece.gameObject);
                     }
@@ -390,6 +377,7 @@ public class Board : MonoBehaviour
                 
             }
         }
+        levelManager.CheckGoals();
         return clearedTiles;
     }
 
