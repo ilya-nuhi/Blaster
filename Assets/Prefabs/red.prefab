@@ -102,6 +102,7 @@ MonoBehaviour:
   pieceType: 0
   isBreakableWithMatch: 0
   isMatchingPiece: 1
+  isBreakable: 0
   isMovable: 1
   breakableValue: 0
   breakableSprites: []

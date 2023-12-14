@@ -4,6 +4,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
 using System;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public class LevelInfo
@@ -33,9 +34,10 @@ public class LevelManager : MonoBehaviour
     public event Action onClicked;
     public event Action onFail;
     public event Action onLevelSuccess;
+    public bool levelEnd = false;
     int level=1;
     bool levelSuccess = false; // this variable is for preventing conflict with last move win.
-
+    
 
 
     private void Start() {
@@ -87,13 +89,12 @@ public class LevelManager : MonoBehaviour
     {
         onBlastOccurs();
         if(boxCount==0 && stoneCount==0 && vaseCount==0){   // level is finished
-            board.canMove = false;
+            levelEnd = true;
             levelSuccess = true;
             if(onLevelSuccess!=null){
                 onLevelSuccess();
             }
             LevelContainer.level++;
-            gameManager.ReturnMainScreen();
         }
     }
 
@@ -110,12 +111,19 @@ public class LevelManager : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
         if(moveCount<=0){
-            board.canMove=false;
+            levelEnd = true;
             if(!levelSuccess){
                 if(onFail!=null){
                     onFail();
                 }
             }
+        }
+    }
+
+    void OnClick(){
+        if(levelSuccess){
+            // returns main menu on click when level is completed
+            SceneManager.LoadScene(0);
         }
     }
 

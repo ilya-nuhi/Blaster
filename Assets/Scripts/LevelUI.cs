@@ -13,6 +13,7 @@ public class LevelUI : MonoBehaviour
     [SerializeField] LevelManager levelManager;
     [SerializeField] TextMeshProUGUI moveCountTMP;
     [SerializeField] GameObject failPopup;
+    [SerializeField] GameObject celebration;
     List<TextMeshProUGUI> goalCountTexts = new List<TextMeshProUGUI>();
     List<Image> goalCheckImages = new List<Image>();
 
@@ -104,7 +105,7 @@ public class LevelUI : MonoBehaviour
 
     private void NextLevelAnim()
     {
-        //throw new NotImplementedException();
+        celebration.SetActive(true);
     }
 
 }

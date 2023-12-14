@@ -13,7 +13,6 @@ public class Board : MonoBehaviour
     [SerializeField] GameObject tileNormalPrefab;
     [SerializeField] GameObject[] gamePiecePrefabs;
     [SerializeField] LevelManager levelManager;
-    [SerializeField] float waitClickTime = 0.3f;
     [SerializeField] GameObject gridBGPrefab;
     public event Action onValidClick;
     public bool canMove = true;
@@ -21,7 +20,6 @@ public class Board : MonoBehaviour
     Tile[,] m_allTiles;
     GamePiece[,] m_allGamePieces;
     LevelInfo currentLevel;
-    float clickTimer=0;
     
     void Start()
     {
@@ -35,10 +33,6 @@ public class Board : MonoBehaviour
         SetupGamePieces();
         CheckTntState();
         SetupCamera();
-    }
-
-    private void Update() {
-        clickTimer -= Time.deltaTime;
     }
 
     private void InitLevel(LevelInfo currentLevel)
@@ -163,9 +157,9 @@ public class Board : MonoBehaviour
 
     public void ClickTile(Tile tile)
     {
-        if(!canMove){return;}
+        if(!canMove || levelManager.levelEnd){return;}
         GamePiece clickedPiece = m_allGamePieces[tile.xIndex,tile.yIndex];
-        if(clickedPiece!=null && clickTimer<=0){
+        if(clickedPiece!=null){
             if(clickedPiece.isMatchingPiece){
                 BlastRoutine(clickedPiece);
             }
@@ -175,7 +169,6 @@ public class Board : MonoBehaviour
                 }
                 TntRoutine(clickedPiece);
             }
-            clickTimer = waitClickTime;
         }
     }
 
@@ -431,24 +424,24 @@ public class Board : MonoBehaviour
         }
     }
 
-    // public void PlaceGamePiece(GamePiece gamePiece, int x, int y)
-    // {
-    //     if (gamePiece == null)
-    //     {
-    //         Debug.LogWarning("BOARD:  Invalid GamePiece!");
-    //         return;
-    //     }
+    public void PlaceGamePiece(GamePiece gamePiece, int x, int y)
+    {
+        if (gamePiece == null)
+        {
+            Debug.LogWarning("BOARD:  Invalid GamePiece!");
+            return;
+        }
 
-    //     gamePiece.transform.position = new Vector3(x, y, 0);
-    //     gamePiece.transform.rotation = Quaternion.identity;
+        gamePiece.transform.position = new Vector3(x, y, 0);
+        gamePiece.transform.rotation = Quaternion.identity;
 
-    //     if (IsWithinBounds(x, y))
-    //     {
-    //         m_allGamePieces[x, y] = gamePiece;
-    //     }
+        if (IsWithinBounds(x, y))
+        {
+            m_allGamePieces[x, y] = gamePiece;
+        }
 
-    //     gamePiece.SetCoord(x, y);
-    // }
+        gamePiece.SetCoord(x, y);
+    }
 
     private void RefillColumn(int column, float refillTime = 0.1f)
     {

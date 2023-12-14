@@ -68,7 +68,6 @@ public class GamePiece : MonoBehaviour
 
 	IEnumerator MoveRoutine(Vector3 destination, float timeToMove)
 	{
-		yield return new WaitForSeconds(0.1f);
 		Vector3 startPosition = transform.position;
 
 		bool reachedDestination = false;
@@ -77,24 +76,24 @@ public class GamePiece : MonoBehaviour
 
 		m_isMoving = true;
 
-		if(xIndex!=destination.x || yIndex!=destination.y){
-			destination.x = xIndex;
-			destination.y = yIndex;
-		}
+		// if(xIndex!=destination.x || yIndex!=destination.y){
+		// 	destination.x = xIndex;
+		// 	destination.y = yIndex;
+		// }
 
 		while (!reachedDestination)
 		{
+			m_board.canMove=false;
 			// if we are close enough to destination
 			if (Vector3.Distance(transform.position, destination) < 0.01f)
 			{
-
 				reachedDestination = true;
 
-				// if (m_board !=null)
-				// {
-				//	m_board.PlaceGamePiece(this, (int) destination.x, (int) destination.y);
+				if (m_board !=null)
+				{
+					m_board.PlaceGamePiece(this, (int) destination.x, (int) destination.y);
 
-				// }
+				}
 
 				break;
 			}
@@ -131,7 +130,7 @@ public class GamePiece : MonoBehaviour
 		}
 
 		m_isMoving = false;
-
+		m_board.canMove = true;
 	}
 
 	public void BreakGamePiece(){
@@ -141,4 +140,5 @@ public class GamePiece : MonoBehaviour
 			m_spriteRenderer.sprite = breakableSprites[breakableValue];
 		}
 	}
+
 }
