@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
@@ -17,6 +18,7 @@ public enum PieceType
 
 public class GamePiece : MonoBehaviour
 {
+	[SerializeField] GameObject particleFXObject;
     public int xIndex;
 	public int yIndex;
 	Board m_board;
@@ -141,4 +143,18 @@ public class GamePiece : MonoBehaviour
 		}
 	}
 
+	public void DestroyPieceHelper(){
+		if(particleFXObject!=null){
+			particleFXObject.SetActive(true);
+		}
+		StartCoroutine(DestroyPiece());
+	}
+
+    IEnumerator DestroyPiece()
+    {
+		GetComponent<SpriteRenderer>().enabled = false;
+		// wait 1 second to destroy gameobject in order to finish its blast animation.
+		yield return new WaitForSeconds(1);
+		Destroy(gameObject);
+    }
 }

@@ -346,7 +346,7 @@ public class Board : MonoBehaviour
         foreach(var piece in gamePieces){
             if(piece != null){
                 m_allGamePieces[piece.xIndex,piece.yIndex] = null;
-                Destroy(piece.gameObject);
+                piece.DestroyPieceHelper();
             }
         }
     }
@@ -377,7 +377,7 @@ public class Board : MonoBehaviour
                                 break;
                         }
                         m_allGamePieces[piece.xIndex,piece.yIndex] = null;
-                        Destroy(piece.gameObject);
+                        piece.DestroyPieceHelper();
                     }
                 }
                 

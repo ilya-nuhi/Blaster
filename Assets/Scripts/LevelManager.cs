@@ -22,6 +22,7 @@ public class LevelManager : MonoBehaviour
     [TextArea(3,5)]
     [SerializeField] string[] levelJsonPath;
     [SerializeField] Board board;
+    [SerializeField] SoundManager soundManager;
     [SerializeField] GameManager gameManager;
     public LevelInfo currentLevel;
 
@@ -89,6 +90,7 @@ public class LevelManager : MonoBehaviour
     {
         onBlastOccurs();
         if(boxCount==0 && stoneCount==0 && vaseCount==0){   // level is finished
+        soundManager.SuccessSound();
             levelEnd = true;
             levelSuccess = true;
             if(onLevelSuccess!=null){
@@ -100,6 +102,7 @@ public class LevelManager : MonoBehaviour
 
     private void ValidClick()
     {
+        soundManager.PopSound();
         moveCount--;
         if(onClicked!=null){
             onClicked();
