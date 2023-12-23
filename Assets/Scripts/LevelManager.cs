@@ -21,6 +21,7 @@ public class LevelManager : MonoBehaviour
 {
     [TextArea(3,5)]
     [SerializeField] string[] levelJsonPath;
+    [SerializeField] TextAsset[] levelFiles;
     [SerializeField] Board board;
     [SerializeField] SoundManager soundManager;
     [SerializeField] GameManager gameManager;
@@ -54,12 +55,15 @@ public class LevelManager : MonoBehaviour
     {
         try
         {
-            using (StreamReader r = new StreamReader(levelJsonPath[level-1]))
-            {
-                string json = r.ReadToEnd();
-                LevelInfo currentLevel = JsonConvert.DeserializeObject<LevelInfo>(json);
-                return currentLevel;
-            }
+            // using (StreamReader r = new StreamReader(levelJsonPath[level-1]))
+            // {
+            //     string json = r.ReadToEnd();
+            //     LevelInfo currentLevel = JsonConvert.DeserializeObject<LevelInfo>(json);
+            //     return currentLevel;
+            // }
+            string json = levelFiles[level-1].text;
+            LevelInfo currentLevel = JsonConvert.DeserializeObject<LevelInfo>(json);
+            return currentLevel;
         }
         catch (Exception e)
         {
