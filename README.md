@@ -9,7 +9,7 @@ There are goal game pieces to break and complete the level.
 You have to complete the level in the given move counts.  
 
 # In-game Screenshots  
-![alt text](https://github.com/ilya-nuhi/TileVania/blob/main/blaster_merged_ss.png?raw=true)  
+![alt text](https://github.com/ilya-nuhi/Blaster/blob/main/blaster_merged_ss.png?raw=true)  
 You can play the game via below links:  
 https://ilya-nuhi.itch.io/blaster  
 https://sharemygame.com/@ilya_nuhi/blaster  
