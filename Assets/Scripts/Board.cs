@@ -19,7 +19,7 @@ public class Board : MonoBehaviour
     
     Tile[,] m_allTiles;
     GamePiece[,] m_allGamePieces;
-    LevelInfo currentLevel;
+    LevelData currentLevel;
     
     void Start()
     {
@@ -35,7 +35,7 @@ public class Board : MonoBehaviour
         SetupCamera();
     }
 
-    private void InitLevel(LevelInfo currentLevel)
+    private void InitLevel(LevelData currentLevel)
     {
         width = currentLevel.grid_width;
         height = currentLevel.grid_height;
@@ -244,7 +244,6 @@ public class Board : MonoBehaviour
                             }
                         }
                     }
-                    
                 }
                 if(IsWithinBounds(piece.xIndex-1,piece.yIndex)){
                     GamePiece leftPiece = m_allGamePieces[piece.xIndex-1, piece.yIndex];

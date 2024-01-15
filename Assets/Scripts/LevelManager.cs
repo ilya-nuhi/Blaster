@@ -7,25 +7,18 @@ using System;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-public class LevelInfo
-    {
-        public int level_number;
-        public int grid_width;
-        public int grid_height;
-        public int move_count;
-        public string[] grid;
-        
-    }
-
 public class LevelManager : MonoBehaviour
 {
-    [TextArea(3,5)]
-    [SerializeField] string[] levelJsonPath;
-    [SerializeField] TextAsset[] levelFiles;
+    
+    //[TextArea(3,5)]
+    //[SerializeField] string[] levelJsonPath;
+    //[SerializeField] TextAsset[] levelFiles;
     [SerializeField] Board board;
     [SerializeField] SoundManager soundManager;
     [SerializeField] GameManager gameManager;
-    public LevelInfo currentLevel;
+    public LevelData currentLevel;
+
+    PersistentPath persistentPath;
 
     public int boxCount=0;
     public int stoneCount=0;
@@ -43,14 +36,17 @@ public class LevelManager : MonoBehaviour
 
 
     private void Start() {
+        persistentPath = new PersistentPath();
         level = LevelContainer.level;
-        LevelContainer.totalLevel = levelJsonPath.Length;
-        currentLevel = LoadLevel(level);
+        //LevelContainer.totalLevel = levelFiles.Length;
+        //currentLevel = LoadLevel(level);
+        currentLevel = persistentPath.LoadLevel("level_" + level.ToString("D2") + ".json");
         GetGoals();
         moveCount = currentLevel.move_count;
         board.onValidClick += ValidClick;
     }
 
+/*
     public LevelInfo LoadLevel(int level)
     {
         try
@@ -70,7 +66,7 @@ public class LevelManager : MonoBehaviour
             Debug.Log(e.Message);
             return null;
         }
-    }
+    }*/
 
     public void GetGoals(){
         foreach(var item in currentLevel.grid){
@@ -94,7 +90,7 @@ public class LevelManager : MonoBehaviour
     {
         onBlastOccurs();
         if(boxCount==0 && stoneCount==0 && vaseCount==0){   // level is finished
-        soundManager.SuccessSound();
+            soundManager.SuccessSound();
             levelEnd = true;
             levelSuccess = true;
             if(onLevelSuccess!=null){
