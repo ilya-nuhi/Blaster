@@ -18,7 +18,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField] GameManager gameManager;
     public LevelData currentLevel;
 
-    LevelLoader persistentPath;
+    LevelLoader levelLoader;
 
     public int boxCount=0;
     public int stoneCount=0;
@@ -36,11 +36,11 @@ public class LevelManager : MonoBehaviour
 
 
     private void Start() {
-        persistentPath = new LevelLoader();
+        levelLoader = new LevelLoader();
         level = LevelContainer.level;
         //LevelContainer.totalLevel = levelFiles.Length;
         //currentLevel = LoadLevel(level);
-        currentLevel = persistentPath.LoadLevel("level_" + level.ToString("D2"));
+        currentLevel = levelLoader.LoadLevel("level_" + level.ToString("D2"));
         GetGoals();
         moveCount = currentLevel.move_count;
         board.onValidClick += ValidClick;
